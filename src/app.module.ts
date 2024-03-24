@@ -12,7 +12,8 @@ import { TwitchModule } from './twitch/twitch.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client')
     }),
-    TwitchModule],
+    TwitchModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
