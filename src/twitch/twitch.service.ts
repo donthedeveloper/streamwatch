@@ -1,6 +1,8 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { AppTokenAuthProvider, RefreshingAuthProvider } from '@twurple/auth';
+import { AppTokenAuthProvider, RefreshingAuthProvider, StaticAuthProvider } from '@twurple/auth';
+import { ApiClient } from '@twurple/api';
 import { ChatClient } from '@twurple/chat';
+import { EventSubWsListener } from '@twurple/eventsub-ws';
 
 @Injectable()
 export class TwitchService implements OnApplicationBootstrap {
@@ -10,6 +12,30 @@ export class TwitchService implements OnApplicationBootstrap {
 
     private connectToTwitch() {
         console.log('Connect to Twitch!');
+
+        const authProvider = new StaticAuthProvider(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_ACCESS_TOKEN);
+
+        // Connect Twitch chat client
+        const chatClient = new ChatClient({ authProvider, channels: ['donthedeveloper'] });
+        chatClient.connect();
+
+        chatClient.onMessage((channel, user, text, msg) => {
+            console.log(user, 'user id: ' + msg.userInfo.userId, text);
+        });
+
+        // Connect Twitch EventSub listener
+        const apiClient = new ApiClient({ authProvider });
+
+        const listener = new EventSubWsListener({ apiClient });
+        listener.start();
+
+        listener.onStreamOnline(process.env.TWITCH_USER_ID, (event) => {
+            console.log(`${event.broadcasterDisplayName} just went live!`)
+        });
+
+        listener.onStreamOffline(process.env.TWITCH_USER_ID, (event) => {
+            console.log(`${event.broadcasterDisplayName} just went offline.`)
+        });
     }
 
     async getTwitchToken(code: string) {
