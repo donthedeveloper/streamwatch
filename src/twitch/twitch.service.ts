@@ -7,7 +7,7 @@ import { EventSubWsListener } from '@twurple/eventsub-ws';
 @Injectable()
 export class TwitchService implements OnApplicationBootstrap {
     onApplicationBootstrap() {
-        this.connectToTwitch();
+        // this.connectToTwitch();
     }
 
     private connectToTwitch() {
@@ -57,6 +57,9 @@ export class TwitchService implements OnApplicationBootstrap {
             if (!response.ok) {
                 throw new Error('HTTP error status: ' + response.status);
             }
+
+            // Mongo/Mongoose doc:
+            // https://docs.nestjs.com/techniques/mongodb
 
             return await response.json();
         } catch(error) {
